@@ -1,0 +1,68 @@
+# This is based on this example:
+# https://github.com/bazelbuild/examples/blob/main/frontend/react/BUILD.bazel
+
+load("@aspect_rules_js//js:defs.bzl", "js_library", "js_run_binary", "js_run_devserver")
+load("@npm//:defs.bzl", "npm_link_all_packages")
+load("@npm//:vite/package_json.bzl", "bin")
+
+npm_link_all_packages()
+
+filegroup(
+    name = "src",
+    srcs = glob(["src/**"]),
+)
+
+filegroup(
+    name = "public",
+    srcs = glob(["public/**"]),
+)
+
+RUNTIME_DEPS = [
+    ":src",
+    ":public",
+    "index.html",
+    "package.json",
+    ":node_modules/react-dom",
+    ":node_modules/react",
+    ":node_modules/vite",
+]
+
+js_library(
+    name = "package_json",
+    srcs = ["package.json"],
+    visibility = ["//visibility:public"],
+    deps = [":node_modules/eslint-config-react-app"],
+)
+
+js_library(
+    name = "vite.config",
+    srcs = ["vite.config.ts"],
+    data = [
+        ":node_modules/@vitejs/plugin-react",
+    ],
+    visibility = ["//react:__subpackages__"],
+)
+
+bin.vite_binary(
+    name = "vite",
+    chdir = package_name(),
+    data = ["vite.config"],
+)
+
+# Create production release artifacts.
+js_run_binary(
+    name = "build",
+    srcs = RUNTIME_DEPS,
+    args = ["build"],
+    mnemonic = "ViteBuild",
+    out_dirs = ["dist"],
+    tool = ":vite",
+)
+
+# Hosts the production-bundled application in a web server
+bin.vite_binary(
+    name = "preview",
+    args = ["preview"],
+    chdir = package_name(),
+    data = [":build"],
+)
