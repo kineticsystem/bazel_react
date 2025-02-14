@@ -1,10 +1,12 @@
 # This is based on this example:
 # https://github.com/bazelbuild/examples/blob/main/frontend/react/BUILD.bazel
 
-load("@aspect_rules_js//js:defs.bzl", "js_library", "js_run_binary", "js_run_devserver")
+load("@aspect_rules_js//js:defs.bzl", "js_library", "js_run_binary")
 load("@npm//:defs.bzl", "npm_link_all_packages")
 load("@npm//:vite/package_json.bzl", "bin")
 
+# This command create a symlink of the node_modules folder in the root of the
+# workspace.
 npm_link_all_packages()
 
 filegroup(
@@ -17,21 +19,10 @@ filegroup(
     srcs = glob(["public/**"]),
 )
 
-RUNTIME_DEPS = [
-    ":src",
-    ":public",
-    "index.html",
-    "package.json",
-    ":node_modules/react-dom",
-    ":node_modules/react",
-    ":node_modules/vite",
-]
-
 js_library(
     name = "package_json",
     srcs = ["package.json"],
-    visibility = ["//visibility:public"],
-    deps = [":node_modules/eslint-config-react-app"],
+    visibility = ["//visibility:public"]
 )
 
 js_library(
@@ -43,11 +34,22 @@ js_library(
     visibility = ["//react:__subpackages__"],
 )
 
+# Create a binary that runs the vite dev server.
 bin.vite_binary(
     name = "vite",
     chdir = package_name(),
     data = ["vite.config"],
 )
+
+RUNTIME_DEPS = [
+    ":src",
+    ":public",
+    "index.html",
+    "package.json",
+    ":node_modules/react-dom",
+    ":node_modules/react",
+    ":node_modules/vite",
+]
 
 # Create production release artifacts.
 js_run_binary(
@@ -59,7 +61,7 @@ js_run_binary(
     tool = ":vite",
 )
 
-# Hosts the production-bundled application in a web server
+# Hosts the production-bundled application in a web server.
 bin.vite_binary(
     name = "preview",
     args = ["preview"],

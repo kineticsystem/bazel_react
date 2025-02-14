@@ -11,7 +11,7 @@ npm = use_extension("@aspect_rules_js//npm:extensions.bzl", "npm", dev_dependenc
 npm.npm_translate_lock(
     name = "npm",
     data = [
-        #"//:package.json",
+        "//:package.json",
         "//:pnpm-workspace.yaml",
         "//:frontend-react/package.json",
     ],
