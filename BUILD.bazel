@@ -1,6 +1,11 @@
 load("@aspect_rules_js//js:defs.bzl", "js_binary")
 load("@npm//:defs.bzl", "npm_link_all_packages")
 
+# When invoked in a project BUILD file, the npm_link_all_packages() rule scans
+# the project "package.json" and creates a symlink for each dependency listed
+# in the file. The symlinks are placed in the "node_modules" directory of the
+# current workspace, at the root of the monorepo.
+
 npm_link_all_packages(
     name = "node_modules",
 )
